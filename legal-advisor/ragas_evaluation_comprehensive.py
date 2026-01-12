@@ -83,7 +83,7 @@ class RAGASEvaluator:
         
         evaluation_data = []
         
-        for item in tqdm(questions_data, desc="Processing questions"):
+        for item in tqdm(questions_data, desc="Processing questions", ascii=True):
             question = item['question']
             ground_truth = item['answer']
             
