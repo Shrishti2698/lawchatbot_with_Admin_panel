@@ -166,6 +166,31 @@ export default function VectorStore() {
       {/* Search Interface */}
       <div className="card">
         <h2 className="text-xl font-bold mb-4">🔍 Search Vector Store</h2>
+        
+        {/* Sample Queries */}
+        <div className="mb-4">
+          <h3 className="font-semibold mb-2">Sample Queries:</h3>
+          <div className="flex flex-wrap gap-2">
+            {[
+              "What is Article 21 of the Constitution?",
+              "What are the provisions of Section 302 IPC?",
+              "What is the procedure for filing an FIR?",
+              "What are fundamental rights in India?",
+              "What is the punishment for theft under IPC?",
+              "What is the difference between IPC and BNS?",
+              "What are the provisions of Section 498A?"
+            ].map((query, index) => (
+              <button
+                key={index}
+                onClick={() => setSearchQuery(query)}
+                className="px-3 py-1 text-sm bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition-colors"
+              >
+                {query}
+              </button>
+            ))}
+          </div>
+        </div>
+        
         <div className="flex space-x-4 mb-4">
           <input
             type="text"
@@ -185,22 +210,50 @@ export default function VectorStore() {
         </div>
 
         {searchResults && (
-          <div className="space-y-3">
-            <h3 className="font-semibold">Search Results ({searchResults.results_count})</h3>
-            {searchResults.results.map((result, index) => (
-              <div key={index} className="p-4 bg-gray-50 rounded-lg">
-                <div className="flex justify-between items-start mb-2">
-                  <span className="font-medium">Rank #{result.rank}</span>
-                  <span className="text-sm text-gray-600">
-                    Score: {result.similarity_score}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-700 mb-2">{result.content}</p>
-                <p className="text-xs text-gray-500">
-                  Source: {result.metadata?.source || 'Unknown'}
-                </p>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="font-semibold">Search Results</h3>
+              <div className="text-sm text-gray-600">
+                Found {searchResults.results_count} results in {searchResults.search_time_ms}ms
               </div>
-            ))}
+            </div>
+
+            {searchResults.results.length === 0 ? (
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-yellow-800">No results found for this query.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {searchResults.results.map((result, index) => (
+                  <div key={index} className="p-4 border border-gray-200 rounded-lg">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-medium">#{result.rank}</span>
+                        <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
+                          Score: {result.similarity_score}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-500">
+                        Distance: {result.distance}
+                      </span>
+                    </div>
+                    
+                    <div className="mb-3">
+                      <p className="text-sm text-gray-700 leading-relaxed">
+                        {result.content}
+                      </p>
+                    </div>
+                    
+                    <div className="text-xs text-gray-500 space-y-1">
+                      <p><strong>Source:</strong> {result.metadata?.source || 'Unknown'}</p>
+                      {result.metadata?.page && (
+                        <p><strong>Page:</strong> {result.metadata.page}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

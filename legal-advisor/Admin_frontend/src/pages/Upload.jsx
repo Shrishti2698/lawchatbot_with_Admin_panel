@@ -5,9 +5,6 @@ import { useNavigate } from 'react-router-dom';
 export default function Upload() {
   const [file, setFile] = useState(null);
   const [documentType, setDocumentType] = useState('bns');
-  const [chunkSize, setChunkSize] = useState(1000);
-  const [chunkOverlap, setChunkOverlap] = useState(200);
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [result, setResult] = useState(null);
   const navigate = useNavigate();
@@ -43,8 +40,6 @@ export default function Upload() {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('document_type', documentType);
-    formData.append('chunk_size', chunkSize);
-    formData.append('chunk_overlap', chunkOverlap);
 
     try {
       const response = await documentAPI.upload(formData);
@@ -101,51 +96,6 @@ export default function Upload() {
               </option>
             ))}
           </select>
-        </div>
-
-        {/* Advanced Options */}
-        <div>
-          <button
-            type="button"
-            onClick={() => setShowAdvanced(!showAdvanced)}
-            className="text-blue-600 hover:text-blue-800 font-medium text-sm"
-          >
-            {showAdvanced ? '▼' : '▶'} Advanced Options (For specific Document)
-          </button>
-
-          {showAdvanced && (
-            <div className="mt-4 space-y-4 p-4 bg-gray-50 rounded-lg">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Chunk Size (characters)
-                </label>
-                <input
-                  type="number"
-                  value={chunkSize}
-                  onChange={(e) => setChunkSize(parseInt(e.target.value))}
-                  className="input-field"
-                  min="100"
-                  max="5000"
-                />
-                <p className="text-xs text-gray-500 mt-1">Recommended: 500-2000</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Chunk Overlap (characters)
-                </label>
-                <input
-                  type="number"
-                  value={chunkOverlap}
-                  onChange={(e) => setChunkOverlap(parseInt(e.target.value))}
-                  className="input-field"
-                  min="0"
-                  max="1000"
-                />
-                <p className="text-xs text-gray-500 mt-1">Recommended: 10-20% of chunk size</p>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Submit Button */}

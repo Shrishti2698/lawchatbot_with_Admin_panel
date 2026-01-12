@@ -114,6 +114,8 @@ class LegalChatbot {
     formatResponseText(text) {
         // Format numbered lists (1. 2. 3. etc.) and bullet points
         let formattedText = text
+            // Replace **bold** with <strong>bold</strong>
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             // Replace numbered lists with proper line breaks
             .replace(/(\d+\.)\s*/g, '<br><strong>$1</strong> ')
             // Replace bullet points with proper line breaks
@@ -160,37 +162,46 @@ class LegalChatbot {
 
         messageDiv.appendChild(messageContent);
 
-        // Add references if provided
+        // Add references if provided and response is relevant
         if (references && references.length > 0) {
-            const referencesDiv = document.createElement('div');
-            referencesDiv.className = 'references';
+            // Check if the response indicates an irrelevant query
+            const isIrrelevant = content.toLowerCase().includes('can only assist') || 
+                               content.toLowerCase().includes('indian legal topics') ||
+                               content.toLowerCase().includes('not related to indian legal') ||
+                               content.toLowerCase().includes('outside the scope') ||
+                               content.toLowerCase().includes('specialize in indian legal');
             
-            const referencesTitle = document.createElement('h4');
-            referencesTitle.textContent = '📚 References';
-            referencesDiv.appendChild(referencesTitle);
+            if (!isIrrelevant) {
+                const referencesDiv = document.createElement('div');
+                referencesDiv.className = 'references';
+                
+                const referencesTitle = document.createElement('h4');
+                referencesTitle.textContent = '📚 References';
+                referencesDiv.appendChild(referencesTitle);
 
-            references.forEach(ref => {
-                const refItem = document.createElement('div');
-                refItem.className = 'reference-item';
-                refItem.style.cursor = 'pointer';
-                
-                const refTitle = document.createElement('div');
-                refTitle.className = 'reference-title';
-                refTitle.textContent = `📖 ${ref.document}`;
-                
-                const refContent = document.createElement('div');
-                refContent.className = 'reference-content';
-                refContent.textContent = ref.content.substring(0, 100) + '...';
-                
-                // Add hover popup functionality
-                this.addHoverPopup(refItem, ref);
-                
-                refItem.appendChild(refTitle);
-                refItem.appendChild(refContent);
-                referencesDiv.appendChild(refItem);
-            });
+                references.forEach(ref => {
+                    const refItem = document.createElement('div');
+                    refItem.className = 'reference-item';
+                    refItem.style.cursor = 'pointer';
+                    
+                    const refTitle = document.createElement('div');
+                    refTitle.className = 'reference-title';
+                    refTitle.textContent = `📖 ${ref.document}`;
+                    
+                    const refContent = document.createElement('div');
+                    refContent.className = 'reference-content';
+                    refContent.textContent = ref.content.substring(0, 100) + '...';
+                    
+                    // Add hover popup functionality
+                    this.addHoverPopup(refItem, ref);
+                    
+                    refItem.appendChild(refTitle);
+                    refItem.appendChild(refContent);
+                    referencesDiv.appendChild(refItem);
+                });
 
-            messageDiv.appendChild(referencesDiv);
+                messageDiv.appendChild(referencesDiv);
+            }
         }
 
         this.chatMessages.appendChild(messageDiv);

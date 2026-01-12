@@ -168,34 +168,52 @@ Question: {question}"""
     response = llm.invoke(system_template)
     answer = response.content
     
-    # Process references with deduplication
-    references = []
-    seen_refs = set()
+    # Check if the response indicates an irrelevant query
+    irrelevant_indicators = [
+        "I can only assist you with questions related to Indian law",
+        "I can only assist with Indian legal topics",
+        "not related to Indian legal matters",
+        "only assist with Indian legal",
+        "Indian law and legal matters",
+        "politely inform the user that you can only assist with Indian legal topics",
+        "can only help with Indian law",
+        "outside the scope of Indian law",
+        "not within my expertise of Indian law",
+        "I specialize in Indian legal matters",
+        "my expertise is limited to Indian law"
+    ]
     
-    if retrieved_docs:
-        # Use actual retrieved documents as references
-        for doc in retrieved_docs[:4]:  # Top 4 references
-            doc_name = extract_document_name(doc.metadata.get('source', ''))
-            content_preview = doc.page_content[:200] + "..." if len(doc.page_content) > 200 else doc.page_content
-            
-            # Create unique identifier for deduplication
-            ref_key = (doc_name, content_preview)
-            
-            if ref_key not in seen_refs:
-                seen_refs.add(ref_key)
-                references.append({
-                    "document": doc_name,
-                    "content": content_preview,
-                    "type": "retrieved"
-                })
-    else:
-        # Generate synthetic reference if no chunks found but question is legal
-        synthetic_ref = generate_synthetic_reference(question, answer, language)
-        references.append({
-            "document": "Generated Reference",
-            "content": synthetic_ref,
-            "type": "synthetic"
-        })
+    is_irrelevant = any(indicator.lower() in answer.lower() for indicator in irrelevant_indicators)
+    
+    # Process references only if query is relevant
+    references = []
+    if not is_irrelevant:
+        seen_refs = set()
+        
+        if retrieved_docs:
+            # Use actual retrieved documents as references
+            for doc in retrieved_docs[:4]:  # Top 4 references
+                doc_name = extract_document_name(doc.metadata.get('source', ''))
+                content_preview = doc.page_content[:200] + "..." if len(doc.page_content) > 200 else doc.page_content
+                
+                # Create unique identifier for deduplication
+                ref_key = (doc_name, content_preview)
+                
+                if ref_key not in seen_refs:
+                    seen_refs.add(ref_key)
+                    references.append({
+                        "document": doc_name,
+                        "content": content_preview,
+                        "type": "retrieved"
+                    })
+        else:
+            # Generate synthetic reference if no chunks found but question is legal
+            synthetic_ref = generate_synthetic_reference(question, answer, language)
+            references.append({
+                "document": "Generated Reference",
+                "content": synthetic_ref,
+                "type": "synthetic"
+            })
     
     return {
         "answer": answer,
